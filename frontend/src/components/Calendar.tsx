@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Booking, API_BASE } from '@/types';
+import { Booking } from '@/types';
 import { useToast } from './Toast';
 import BookingModal from './BookingModal';
 import ConfirmModal from './ConfirmModal';
@@ -86,7 +86,7 @@ export default function Calendar() {
 
   const fetchBookings = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/bookings`);
+      const res = await fetch('/api/bookings');
       if (!res.ok) throw new Error('Failed');
       const data = await res.json();
       setBookings(data);
@@ -199,7 +199,7 @@ export default function Calendar() {
     if (!deletingBooking) return;
     setDeleteLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/book/${deletingBooking.id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/book/${deletingBooking.id}`, { method: 'DELETE' });
       if (!res.ok) {
         const data = await res.json();
         showToast(data.error || 'The spell failed!', 'error');

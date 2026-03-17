@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Booking, TIME_SLOTS, API_BASE } from '@/types';
+import { Booking, TIME_SLOTS } from '@/types';
 import { useToast } from './Toast';
 import styles from './BookingModal.module.css';
 
@@ -77,8 +77,8 @@ export default function BookingModal({ editingBooking, selectedDate, bookings, o
 
     try {
       const url = isEditMode
-        ? `${API_BASE}/book/${editingBooking.id}`
-        : `${API_BASE}/book`;
+        ? `/api/book/${editingBooking.id}`
+        : `/api/book`;
 
       const res = await fetch(url, {
         method: isEditMode ? 'PUT' : 'POST',

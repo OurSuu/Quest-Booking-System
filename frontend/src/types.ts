@@ -9,5 +9,3 @@ export interface Booking {
 export const TIME_SLOTS = ['13:00–19:00', '21:30–01:30'] as const;
 
 export type TimeSlot = typeof TIME_SLOTS[number];
-
-export const API_BASE = 'http://localhost:3001';
