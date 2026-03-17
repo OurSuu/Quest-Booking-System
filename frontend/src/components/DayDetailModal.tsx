@@ -1,11 +1,12 @@
 'use client';
 
-import { Booking } from '@/types';
+import { Booking, TIME_SLOTS, MAX_SLOT_CAPACITY } from '@/types';
 import styles from './DayDetailModal.module.css';
 
 interface Props {
   dateStr: string;
   bookings: Booking[];
+  allBookings: Booking[];
   onClose: () => void;
   onNewBooking: () => void;
   onEdit: (booking: Booking) => void;
@@ -27,10 +28,18 @@ function formatDate(dateStr: string): string {
   return `${weekday}, ${month} ${day}, ${year}`;
 }
 
-export default function DayDetailModal({ dateStr, bookings, onClose, onNewBooking, onEdit, onDelete, canBook }: Props) {
+export default function DayDetailModal({ dateStr, bookings, allBookings, onClose, onNewBooking, onEdit, onDelete, canBook }: Props) {
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose();
   };
+
+  // Compute slot capacities
+  const slotCounts: Record<string, number> = {};
+  TIME_SLOTS.forEach(slot => {
+    slotCounts[slot] = allBookings.filter(b => b.date === dateStr && b.time_slot === slot).length;
+  });
+
+  const allSlotsFull = TIME_SLOTS.every(slot => slotCounts[slot] >= MAX_SLOT_CAPACITY);
 
   return (
     <div className={styles.backdrop} onClick={handleBackdropClick}>
@@ -47,6 +56,22 @@ export default function DayDetailModal({ dateStr, bookings, onClose, onNewBookin
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
+        </div>
+
+        {/* Slot capacity summary */}
+        <div className={styles.capacitySummary}>
+          {TIME_SLOTS.map(slot => {
+            const count = slotCounts[slot];
+            const taken = count >= MAX_SLOT_CAPACITY;
+            return (
+              <div key={slot} className={`${styles.capacitySlot} ${taken ? styles.capacitySlotFull : ''}`}>
+                <span className={styles.capacitySlotName}>⏳ {slot}</span>
+                <span className={styles.capacitySlotCount}>
+                  {taken ? '⛔ Party Assigned' : '✅ Available'}
+                </span>
+              </div>
+            );
+          })}
         </div>
 
         <div className={styles.content}>
@@ -92,11 +117,16 @@ export default function DayDetailModal({ dateStr, bookings, onClose, onNewBookin
           )}
         </div>
 
-        {canBook && (
+        {canBook && !allSlotsFull && (
           <div className={styles.footer}>
             <button className={styles.newQuestBtn} onClick={onNewBooking}>
               ✦ Register New Quest
             </button>
+          </div>
+        )}
+        {canBook && allSlotsFull && (
+          <div className={styles.footer}>
+            <div className={styles.fullMessage}>⛔ Guild Full. No more adventurers today.</div>
           </div>
         )}
       </div>

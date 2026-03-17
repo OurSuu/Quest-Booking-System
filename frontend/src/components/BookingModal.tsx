@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Booking, TIME_SLOTS } from '@/types';
+import { Booking, TIME_SLOTS, MAX_SLOT_CAPACITY } from '@/types';
 import { useToast } from './Toast';
 import styles from './BookingModal.module.css';
 
@@ -40,29 +40,45 @@ export default function BookingModal({ editingBooking, selectedDate, bookings, o
     return new Date(date + 'T00:00:00') < today;
   }, [date]);
 
-  const isLessThan3Days = useMemo(() => {
+  const isToday = useMemo(() => {
     if (!date) return false;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const diff = (new Date(date + 'T00:00:00').getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
-    return diff < 3;
+    return new Date(date + 'T00:00:00').getTime() === today.getTime();
   }, [date]);
 
-  const isSlotTaken = useMemo(() => {
-    if (!date || !timeSlot) return false;
-    return bookings.some(
+  const isDateInvalid = isDatePast || isToday;
+
+  // Get slot count for selected date+slot
+  const slotCount = useMemo(() => {
+    if (!date || !timeSlot) return 0;
+    return bookings.filter(
       b => b.date === date && b.time_slot === timeSlot && (!editingBooking || b.id !== editingBooking.id)
-    );
+    ).length;
   }, [date, timeSlot, bookings, editingBooking]);
 
-  const isSubmitDisabled = loading || isDatePast || isLessThan3Days || isSlotTaken || !groupName.trim();
+  const isSlotFull = slotCount >= MAX_SLOT_CAPACITY;
+
+  // Get counts per slot for the selected date
+  const slotCounts = useMemo(() => {
+    if (!date) return {};
+    const counts: Record<string, number> = {};
+    TIME_SLOTS.forEach(slot => {
+      counts[slot] = bookings.filter(
+        b => b.date === date && b.time_slot === slot && (!editingBooking || b.id !== editingBooking.id)
+      ).length;
+    });
+    return counts;
+  }, [date, bookings, editingBooking]);
+
+  const isSubmitDisabled = loading || isDateInvalid || isSlotFull || !groupName.trim();
 
   const warningMessage = useMemo(() => {
-    if (isDatePast) return 'This date has already passed. The sands of time cannot be reversed.';
-    if (isLessThan3Days) return 'The guild requires at least 3 days notice to prepare for a quest.';
-    if (isSlotTaken) return 'Another party has already claimed this time slot!';
+    if (isDatePast) return 'You cannot book past or current day.';
+    if (isToday) return 'You cannot book past or current day.';
+    if (isSlotFull) return 'This time slot is already taken.';
     return null;
-  }, [isDatePast, isLessThan3Days, isSlotTaken]);
+  }, [isDatePast, isToday, isSlotFull]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,8 +86,8 @@ export default function BookingModal({ editingBooking, selectedDate, bookings, o
 
     if (!groupName.trim()) { setError('Your party needs a name, adventurer!'); return; }
     if (!date) { setError('Choose a date for your quest!'); return; }
-    if (isDatePast) { setError('The past is sealed. Choose another day.'); return; }
-    if (isLessThan3Days) { setError('The guild requires 3 days to prepare.'); return; }
+    if (isDateInvalid) { setError('You cannot book past or current day.'); return; }
+    if (isSlotFull) { setError('This time slot is already taken.'); return; }
 
     setLoading(true);
 
@@ -142,11 +158,15 @@ export default function BookingModal({ editingBooking, selectedDate, bookings, o
               value={timeSlot}
               onChange={(e) => { setTimeSlot(e.target.value); setError(null); }}
             >
-              {TIME_SLOTS.map(slot => (
-                <option key={slot} value={slot}>
-                  {slot}{slot === '21:30–01:30' ? ' (nightfall)' : ''}
-                </option>
-              ))}
+              {TIME_SLOTS.map(slot => {
+                const count = slotCounts[slot] ?? 0;
+                const taken = count >= MAX_SLOT_CAPACITY;
+                return (
+                  <option key={slot} value={slot} disabled={taken}>
+                    {slot}{slot === '21:30–01:30' ? ' (nightfall)' : ''} — {taken ? '⛔ Taken' : 'Available'}
+                  </option>
+                );
+              })}
             </select>
           </div>
 
@@ -161,6 +181,13 @@ export default function BookingModal({ editingBooking, selectedDate, bookings, o
               required
             />
           </div>
+
+          {/* Capacity indicator */}
+          {date && !isDateInvalid && (
+            <div className={isSlotFull ? styles.capacityFull : styles.capacityOk}>
+              ⚗ Slot status: {isSlotFull ? '⛔ This time slot is taken!' : '✅ Slot is available'}
+            </div>
+          )}
 
           {warningMessage && <div className={styles.warning}>⚠ {warningMessage}</div>}
           {error && !warningMessage && <div className={styles.error}>✕ {error}</div>}

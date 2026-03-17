@@ -9,3 +9,5 @@ export interface Booking {
 export const TIME_SLOTS = ['13:00–19:00', '21:30–01:30'] as const;
 
 export type TimeSlot = typeof TIME_SLOTS[number];
+
+export const MAX_SLOT_CAPACITY = 1;

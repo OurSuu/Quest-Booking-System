@@ -244,6 +244,31 @@
   box-shadow: none;
 }
 
+/* Capacity indicators */
+.capacityOk {
+  padding: 0.5rem 0.875rem;
+  background: rgba(45, 90, 39, 0.08);
+  border: 1px solid rgba(45, 90, 39, 0.2);
+  border-left: 3px solid #2d5a27;
+  border-radius: 6px;
+  color: #2d5a27;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.capacityFull {
+  padding: 0.5rem 0.875rem;
+  background: rgba(139, 26, 26, 0.08);
+  border: 1px solid rgba(139, 26, 26, 0.2);
+  border-left: 3px solid var(--red-blood);
+  border-radius: 6px;
+  color: var(--red-blood);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
 /* ===== RESPONSIVE — TABLET ===== */
 @media (max-width: 768px) {
   .modal {

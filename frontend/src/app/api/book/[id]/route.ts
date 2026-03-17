@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getBookingById, updateBooking, deleteBooking, isDuplicate, isAtLeast3DaysAhead, VALID_TIME_SLOTS } from '@/lib/db';
+import { getBookingById, updateBooking, deleteBooking, isSlotFull, isFutureDate, VALID_TIME_SLOTS } from '@/lib/db';
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -35,14 +35,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Group name cannot be empty' }, { status: 400 });
     }
 
-    // Validate 3 days in advance
-    if (!isAtLeast3DaysAhead(date)) {
-      return NextResponse.json({ error: 'Booking must be at least 3 days in advance' }, { status: 400 });
+    // Validate future date (must be tomorrow or later)
+    if (!isFutureDate(date)) {
+      return NextResponse.json({ error: 'You cannot book past or current day.' }, { status: 400 });
     }
 
-    // Check for duplicates (excluding current booking)
-    if (isDuplicate(date, time_slot, id)) {
-      return NextResponse.json({ error: 'A booking already exists for this date and time slot' }, { status: 409 });
+    // Check slot capacity (excluding current booking)
+    if (isSlotFull(date, time_slot, id)) {
+      return NextResponse.json({ error: 'This time slot is already taken.' }, { status: 409 });
     }
 
     const updated = updateBooking(id, date, time_slot, group_name.trim());

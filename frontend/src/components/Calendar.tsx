@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Booking } from '@/types';
+import { Booking, MAX_SLOT_CAPACITY, TIME_SLOTS } from '@/types';
 import { useToast } from './Toast';
 import BookingModal from './BookingModal';
 import ConfirmModal from './ConfirmModal';
@@ -32,28 +32,18 @@ function getTodayStr() {
   return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
 }
 
-function isBookable(dateStr: string): boolean {
+function isFutureDate(dateStr: string): boolean {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const d = new Date(dateStr + 'T00:00:00');
-  const diffDays = (d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
-  return diffDays >= 3;
+  return d.getTime() > today.getTime(); // strictly after today
 }
 
-function isPastOrToday(dateStr: string): boolean {
+function isPast(dateStr: string): boolean {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const d = new Date(dateStr + 'T00:00:00');
-  return d <= today;
-}
-
-function isUnbookableFuture(dateStr: string): boolean {
-  // Future but < 3 days ahead (not today, not past)
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const d = new Date(dateStr + 'T00:00:00');
-  const diffDays = (d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
-  return diffDays > 0 && diffDays < 3;
+  return d.getTime() < today.getTime(); // strictly before today
 }
 
 export default function Calendar() {
@@ -166,9 +156,17 @@ export default function Calendar() {
   const getBookingsForDate = (dateStr: string): Booking[] =>
     bookings.filter(b => b.date === dateStr);
 
-  // Click a day → only open detail modal for bookable dates
+  // Get slot count for a specific date+slot
+  const getSlotCount = (dateStr: string, slot: string): number =>
+    bookings.filter(b => b.date === dateStr && b.time_slot === slot).length;
+
+  // Check if ALL slots on a date are full
+  const isDateFullyBooked = (dateStr: string): boolean =>
+    TIME_SLOTS.every(slot => getSlotCount(dateStr, slot) >= MAX_SLOT_CAPACITY);
+
+  // Click a day → only open detail modal for future dates
   const handleDayClick = (dateStr: string) => {
-    if (!isBookable(dateStr)) return; // Today, past, and < 3 days: do nothing
+    if (!isFutureDate(dateStr)) return; // Past & today: do nothing
     setDayDetailDate(dateStr);
   };
 
@@ -298,27 +296,43 @@ export default function Calendar() {
           {calendarCells.map((cell, idx) => {
             const dayBookings = getBookingsForDate(cell.dateStr);
             const isToday = cell.dateStr === todayStr;
-            const past = isPastOrToday(cell.dateStr) && !isToday;
-            const todayCell = isToday;
-            const unbookable = isUnbookableFuture(cell.dateStr);
-            const bookable = isBookable(cell.dateStr);
+            const past = isPast(cell.dateStr);
+            const future = isFutureDate(cell.dateStr);
+            const fullyBooked = future && isDateFullyBooked(cell.dateStr);
+
+            const slot1Count = getSlotCount(cell.dateStr, TIME_SLOTS[0]);
+            const slot2Count = getSlotCount(cell.dateStr, TIME_SLOTS[1]);
+            const totalFilled = slot1Count + slot2Count;
+
+            let tooltip = '';
+            if (future) {
+              tooltip = `${TIME_SLOTS[0]}: ${slot1Count ? 'Party Assigned' : 'Available'}\n${TIME_SLOTS[1]}: ${slot2Count ? 'Party Assigned' : 'Available'}`;
+            }
 
             // Determine CSS classes
             let cellClass = styles.dayCell;
             if (!cell.inMonth) cellClass += ` ${styles.otherMonth}`;
-            if (todayCell) cellClass += ` ${styles.todayCell}`;
+            if (isToday) cellClass += ` ${styles.todayCell}`;
             if (past) cellClass += ` ${styles.pastDay}`;
-            if (unbookable) cellClass += ` ${styles.unbookableDay}`;
-            if (bookable && cell.inMonth) cellClass += ` ${styles.availableDay}`;
+            if (future && cell.inMonth && !fullyBooked) cellClass += ` ${styles.availableDay}`;
+            if (fullyBooked && cell.inMonth) cellClass += ` ${styles.fullDay}`;
 
             return (
               <div
                 key={idx}
                 className={cellClass}
                 onClick={() => handleDayClick(cell.dateStr)}
+                title={tooltip}
               >
-                <div className={styles.dayNumber}>
-                  <span className={isToday ? styles.todayBadge : ''}>{cell.day}</span>
+                <div className={styles.dayHeader}>
+                  <div className={styles.dayNumber}>
+                    <span className={isToday ? styles.todayBadge : ''}>{cell.day}</span>
+                  </div>
+                  {future && cell.inMonth && (
+                    <div className={styles.slotsFilledIndicator}>
+                      {totalFilled}/2 slots
+                    </div>
+                  )}
                 </div>
                 <div className={styles.bookingsList}>
                   {dayBookings.map(booking => (
@@ -329,6 +343,9 @@ export default function Calendar() {
                       </div>
                     </div>
                   ))}
+                  {fullyBooked && (
+                    <div className={styles.fullBadge}>⛔ Guild Full</div>
+                  )}
                 </div>
               </div>
             );
@@ -340,11 +357,12 @@ export default function Calendar() {
           <DayDetailModal
             dateStr={dayDetailDate}
             bookings={getBookingsForDate(dayDetailDate)}
+            allBookings={bookings}
             onClose={() => setDayDetailDate(null)}
             onNewBooking={handleNewBookingFromDetail}
             onEdit={handleEditFromDetail}
             onDelete={handleDeleteFromDetail}
-            canBook={isBookable(dayDetailDate)}
+            canBook={isFutureDate(dayDetailDate)}
           />
         )}
 

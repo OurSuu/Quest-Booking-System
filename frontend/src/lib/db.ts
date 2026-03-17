@@ -10,10 +10,21 @@ export interface BookingRecord {
   created_at: string;
 }
 
-let nextId = 1;
-const bookings: BookingRecord[] = [];
+const globalForDb = globalThis as unknown as {
+  _bookings?: BookingRecord[];
+  _nextId?: number;
+};
+
+const bookings: BookingRecord[] = globalForDb._bookings || [];
+let nextId = globalForDb._nextId || 1;
+
+if (process.env.NODE_ENV !== 'production') {
+  globalForDb._bookings = bookings;
+  globalForDb._nextId = nextId;
+}
 
 export const VALID_TIME_SLOTS = ['13:00–19:00', '21:30–01:30'];
+export const MAX_SLOT_CAPACITY = 1;
 
 export function getAllBookings(): BookingRecord[] {
   return [...bookings].sort((a, b) => {
@@ -52,15 +63,17 @@ export function deleteBooking(id: number): boolean {
   return true;
 }
 
-export function isDuplicate(date: string, timeSlot: string, excludeId?: number): boolean {
-  return bookings.some(b => b.date === date && b.time_slot === timeSlot && b.id !== excludeId);
+export function getSlotCount(date: string, timeSlot: string, excludeId?: number): number {
+  return bookings.filter(b => b.date === date && b.time_slot === timeSlot && b.id !== excludeId).length;
 }
 
-export function isAtLeast3DaysAhead(dateStr: string): boolean {
+export function isSlotFull(date: string, timeSlot: string, excludeId?: number): boolean {
+  return getSlotCount(date, timeSlot, excludeId) >= MAX_SLOT_CAPACITY;
+}
+
+export function isFutureDate(dateStr: string): boolean {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const bookingDate = new Date(dateStr + 'T00:00:00');
-  const diffMs = bookingDate.getTime() - today.getTime();
-  const diffDays = diffMs / (1000 * 60 * 60 * 24);
-  return diffDays >= 3;
+  return bookingDate.getTime() > today.getTime(); // strictly after today
 }

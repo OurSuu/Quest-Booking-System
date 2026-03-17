@@ -64,6 +64,60 @@
   border-bottom: 1px solid rgba(196, 154, 47, 0.25);
 }
 
+/* Capacity summary */
+.capacitySummary {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(62, 39, 35, 0.06);
+  border-bottom: 1px solid rgba(196, 154, 47, 0.15);
+}
+
+.capacitySlot {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(196, 154, 47, 0.25);
+  border-radius: 6px;
+  text-align: center;
+}
+
+.capacitySlotFull {
+  background: rgba(139, 26, 26, 0.08);
+  border-color: rgba(139, 26, 26, 0.25);
+}
+
+.capacitySlotName {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  color: var(--ink-light);
+}
+
+.capacitySlotCount {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.capacitySlotFull .capacitySlotCount {
+  color: var(--red-blood);
+}
+
+/* Full message */
+.fullMessage {
+  text-align: center;
+  padding: 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--red-blood);
+  font-style: italic;
+}
+
 .title {
   font-family: var(--font-title);
   font-size: 1.1rem;
