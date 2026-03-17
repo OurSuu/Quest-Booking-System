@@ -275,3 +275,124 @@
   box-shadow: 0 0 16px var(--gold-glow);
   transform: translateY(-2px);
 }
+
+/* ===== RESPONSIVE — TABLET ===== */
+@media (max-width: 768px) {
+  .modal {
+    max-width: 100%;
+    max-height: 100dvh;
+    margin: 0;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    animation: slideUp 0.35s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(100%); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .modalHeader {
+    padding: 1.25rem 1.25rem 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .title {
+    font-size: 1.15rem;
+  }
+
+  .dateLabel {
+    font-size: 0.9rem;
+  }
+
+  .closeBtn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .content {
+    padding: 1rem 1.25rem;
+    max-height: none;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .questItem {
+    padding: 0.875rem 1rem;
+  }
+
+  .questTime {
+    font-size: 0.85rem;
+  }
+
+  .questName {
+    font-size: 0.95rem;
+  }
+
+  .editBtn,
+  .deleteQuestBtn {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+
+  .questActions {
+    gap: 0.5rem;
+  }
+
+  .footer {
+    padding: 1rem 1.25rem 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .newQuestBtn {
+    padding: 1rem;
+    font-size: 0.9rem;
+    border-radius: 12px;
+  }
+
+  .emptyIcon {
+    font-size: 3rem;
+  }
+
+  .emptyState p {
+    font-size: 1.05rem;
+  }
+}
+
+/* ===== RESPONSIVE — MOBILE ===== */
+@media (max-width: 480px) {
+  .modalHeader {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: 1.05rem;
+  }
+
+  .content {
+    padding: 0.75rem 1rem;
+  }
+
+  .questItem {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .questActions {
+    justify-content: flex-end;
+  }
+
+  .footer {
+    padding: 0.75rem 1rem 1.25rem;
+  }
+
+  .newQuestBtn {
+    padding: 0.875rem;
+    font-size: 0.85rem;
+  }
+}

@@ -510,57 +510,185 @@
   letter-spacing: 0.02em;
 }
 
-/* ===== RESPONSIVE ===== */
+/* ===== RESPONSIVE — TABLET (≤ 768px) ===== */
 @media (max-width: 768px) {
   .calendarContainer {
-    padding: 1rem 0.5rem;
+    padding: 1rem 0.75rem 2rem;
   }
 
   .header {
     flex-direction: column;
     gap: 0.75rem;
-    align-items: flex-start;
+    align-items: stretch;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
   }
 
   .header::after {
     display: none;
   }
 
+  .headerLeft {
+    justify-content: center;
+  }
+
   .title {
-    font-size: 1.25rem;
+    font-size: 1.35rem;
+    text-align: center;
   }
 
   .year {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
   }
 
+  .headerRight {
+    justify-content: center;
+    gap: 0.625rem;
+  }
+
+  .navBtn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .todayBtn {
+    padding: 0.625rem 1.5rem;
+    font-size: 0.85rem;
+  }
+
+  .fantasyMessage {
+    font-size: 0.85rem;
+    padding: 0.25rem 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Week header — 2-letter abbreviations fit better */
+  .weekDay {
+    font-size: 0.6rem;
+    padding: 0.625rem 0.25rem;
+    letter-spacing: 0.06em;
+  }
+
+  /* Grid stays 7 columns but cells shrink */
   .dayCell {
-    min-height: 70px;
-    padding: 0.25rem;
+    min-height: 80px;
+    padding: 0.375rem;
   }
 
+  .dayNumber {
+    font-size: 0.75rem;
+  }
+
+  .todayBadge {
+    width: 26px;
+    height: 26px;
+    font-size: 0.7rem;
+  }
+
+  /* Booking cards */
   .bookingCard {
-    font-size: 0.56rem;
-    padding: 2px 4px;
+    padding: 3px 5px;
+    font-size: 0.58rem;
   }
 
   .bookingTime {
     display: none;
   }
 
-  .weekDay {
-    font-size: 0.6rem;
+  .bookingGroup {
+    font-size: 0.55rem;
+  }
+
+  /* Error banner stacks */
+  .errorBanner {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  .errorBanner button {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
   }
 }
 
+/* ===== RESPONSIVE — MOBILE (≤ 480px) ===== */
 @media (max-width: 480px) {
+  .calendarContainer {
+    padding: 0.75rem 0.375rem 1.5rem;
+  }
+
+  .title {
+    font-size: 1.15rem;
+  }
+
+  .year {
+    font-size: 1rem;
+    margin-left: 0.375rem;
+  }
+
+  .navBtn {
+    width: 42px;
+    height: 42px;
+  }
+
+  .todayBtn {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.8rem;
+  }
+
+  .fantasyMessage {
+    font-size: 0.78rem;
+  }
+
+  .weekDay {
+    font-size: 0.5rem;
+    padding: 0.5rem 0.125rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* Compact cells */
   .dayCell {
-    min-height: 50px;
+    min-height: 58px;
+    padding: 0.25rem;
+  }
+
+  .dayCell::after {
+    inset: 1px;
+  }
+
+  .dayNumber {
+    font-size: 0.68rem;
+    margin-bottom: 0.15rem;
   }
 
   .todayBadge {
     width: 22px;
     height: 22px;
-    font-size: 0.65rem;
+    font-size: 0.62rem;
+  }
+
+  .bookingCard {
+    padding: 2px 3px;
+    border-radius: 3px;
+  }
+
+  .bookingGroup {
+    font-size: 0.5rem;
+  }
+
+  /* Loading screen */
+  .magicCircle {
+    width: 70px;
+    height: 70px;
+  }
+
+  .magicCircle::before {
+    font-size: 1.4rem;
+  }
+
+  .loadingText {
+    font-size: 0.9rem;
   }
 }
+
