@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Cinzel+Decorative:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+:root {
+  /* D&D Color Palette */
+  --parchment: #f4e4c1;
+  --parchment-dark: #e8d5a3;
+  --parchment-light: #faf3e3;
+  --wood-dark: #3e2723;
+  --wood-medium: #5d4037;
+  --wood-light: #6d4c41;
+  --gold: #d4a843;
+  --gold-light: #f0d078;
+  --gold-glow: rgba(212, 168, 67, 0.5);
+  --gold-border: #c49a2f;
+  --black: #1a1008;
+  --ink: #2c1810;
+  --ink-light: #5a3d2e;
+  --stone: #8d7b68;
+  --stone-dark: #6b5d4f;
+  --red-blood: #8b1a1a;
+  --green-today: #2d5a27;
+  --green-today-light: #4a8a3f;
+
+  /* Fonts */
+  --font-title: 'Cinzel Decorative', 'Cinzel', serif;
+  --font-heading: 'Cinzel', serif;
+  --font-body: 'Crimson Text', Georgia, serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--gold);
+  color: var(--black);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--parchment-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--wood-medium);
+  border-radius: 2px;
+  border: 2px solid var(--parchment-dark);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--wood-dark);
+}

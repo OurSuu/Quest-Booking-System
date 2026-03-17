@@ -1,0 +1,128 @@
+/* ===== CONFIRM MODAL — FANTASY STYLE ===== */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(26, 16, 8, 0.55);
+  backdrop-filter: blur(6px);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  width: 100%;
+  max-width: 380px;
+  margin: 1rem;
+  padding: 2rem;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(212, 168, 67, 0.1) 0%, transparent 60%),
+    linear-gradient(180deg, var(--parchment-light) 0%, var(--parchment) 100%);
+  border: 2px solid var(--gold-border);
+  border-radius: 16px;
+  box-shadow:
+    0 0 30px rgba(212, 168, 67, 0.12),
+    0 20px 50px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+.modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--wood-dark), var(--red-blood), var(--wood-dark));
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.88); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.iconWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(139, 26, 26, 0.08);
+  border: 2px solid rgba(139, 26, 26, 0.2);
+  color: var(--red-blood);
+  margin-bottom: 1rem;
+}
+
+.message {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  white-space: pre-line;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.cancelBtn {
+  flex: 1;
+  padding: 0.7rem;
+  border: 2px solid rgba(93, 64, 55, 0.3);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--stone-dark);
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelBtn:hover {
+  border-color: var(--wood-dark);
+  color: var(--wood-dark);
+}
+
+.confirmBtn {
+  flex: 1;
+  padding: 0.7rem;
+  border: 2px solid var(--red-blood);
+  border-radius: 8px;
+  background: var(--red-blood);
+  color: #ffd0d0;
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 8px rgba(139, 26, 26, 0.2);
+}
+
+.confirmBtn:hover {
+  background: #a52020;
+  box-shadow: 0 0 14px rgba(139, 26, 26, 0.4);
+  transform: translateY(-1px);
+}
+
+.confirmBtn:disabled,
+.cancelBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
