@@ -32,13 +32,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Check slot capacity
-    if (isSlotFull(date, time_slot)) {
+    if (await isSlotFull(date, time_slot)) {
       return NextResponse.json({ error: 'This time slot is already taken.' }, { status: 409 });
     }
 
-    const newBooking = createBooking(date, time_slot, group_name.trim());
+    const newBooking = await createBooking(date, time_slot, group_name.trim());
     return NextResponse.json(newBooking, { status: 201 });
-  } catch {
+  } catch (error) {
+    console.error(error);
     return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 });
   }
 }

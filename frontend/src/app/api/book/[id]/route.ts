@@ -7,7 +7,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const id = parseInt(idStr, 10);
 
     // Check if booking exists
-    const existing = getBookingById(id);
+    const existing = await getBookingById(id);
     if (!existing) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     }
@@ -41,13 +41,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Check slot capacity (excluding current booking)
-    if (isSlotFull(date, time_slot, id)) {
+    if (await isSlotFull(date, time_slot, id)) {
       return NextResponse.json({ error: 'This time slot is already taken.' }, { status: 409 });
     }
 
-    const updated = updateBooking(id, date, time_slot, group_name.trim());
+    const updated = await updateBooking(id, date, time_slot, group_name.trim());
     return NextResponse.json(updated);
-  } catch {
+  } catch (error) {
+    console.error(error);
     return NextResponse.json({ error: 'Failed to update booking' }, { status: 500 });
   }
 }
@@ -57,14 +58,15 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     const { id: idStr } = await params;
     const id = parseInt(idStr, 10);
 
-    const existing = getBookingById(id);
+    const existing = await getBookingById(id);
     if (!existing) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     }
 
-    deleteBooking(id);
+    await deleteBooking(id);
     return NextResponse.json({ message: 'Booking deleted successfully', id });
-  } catch {
+  } catch (error) {
+    console.error(error);
     return NextResponse.json({ error: 'Failed to delete booking' }, { status: 500 });
   }
 }

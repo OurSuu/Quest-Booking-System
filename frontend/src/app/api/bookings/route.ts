@@ -5,9 +5,10 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const bookings = getAllBookings();
+    const bookings = await getAllBookings();
     return NextResponse.json(bookings);
-  } catch {
+  } catch (error) {
+    console.error(error);
     return NextResponse.json({ error: 'Failed to fetch bookings' }, { status: 500 });
   }
 }

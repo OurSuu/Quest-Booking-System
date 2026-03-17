@@ -1,6 +1,4 @@
-// In-memory booking store for serverless deployment
-// Note: In production, replace with a real database (Supabase, PlanetScale, etc.)
-// Data resets on each cold start in serverless environments
+import { Pool } from 'pg';
 
 export interface BookingRecord {
   id: number;
@@ -10,70 +8,101 @@ export interface BookingRecord {
   created_at: string;
 }
 
-const globalForDb = globalThis as unknown as {
-  _bookings?: BookingRecord[];
-  _nextId?: number;
-};
-
-const bookings: BookingRecord[] = globalForDb._bookings || [];
-let nextId = globalForDb._nextId || 1;
-
-if (process.env.NODE_ENV !== 'production') {
-  globalForDb._bookings = bookings;
-  globalForDb._nextId = nextId;
-}
-
 export const VALID_TIME_SLOTS = ['13:00–19:00', '21:30–01:30'];
 export const MAX_SLOT_CAPACITY = 1;
 
-export function getAllBookings(): BookingRecord[] {
-  return [...bookings].sort((a, b) => {
-    if (a.date !== b.date) return a.date.localeCompare(b.date);
-    return a.time_slot.localeCompare(b.time_slot);
-  });
+const globalForDb = globalThis as unknown as {
+  _pgPool?: Pool;
+};
+
+const pool = globalForDb._pgPool || new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  globalForDb._pgPool = pool;
 }
 
-export function getBookingById(id: number): BookingRecord | undefined {
-  return bookings.find(b => b.id === id);
+export async function initDb() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS bookings (
+      id SERIAL PRIMARY KEY,
+      date VARCHAR(10) NOT NULL,
+      time_slot VARCHAR(20) NOT NULL,
+      group_name VARCHAR(100) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
 }
 
-export function createBooking(date: string, time_slot: string, group_name: string): BookingRecord {
-  const booking: BookingRecord = {
-    id: nextId++,
-    date,
-    time_slot,
-    group_name,
-    created_at: new Date().toISOString(),
-  };
-  bookings.push(booking);
-  return booking;
+// Call initDb asynchronously to ensure table exists
+initDb().catch(console.error);
+
+function formatRow(row: any): BookingRecord {
+  if (!row) return row;
+  const formatted = { ...row };
+  if (formatted.date instanceof Date) {
+    // pg creates a Date at local midnight for DATE types. Extract local YYYY-MM-DD
+    const d = formatted.date;
+    formatted.date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+  // If timestamps are returned, keep them as ISO string or whatever is fine
+  return formatted;
 }
 
-export function updateBooking(id: number, date: string, time_slot: string, group_name: string): BookingRecord | null {
-  const idx = bookings.findIndex(b => b.id === id);
-  if (idx === -1) return null;
-  bookings[idx] = { ...bookings[idx], date, time_slot, group_name };
-  return bookings[idx];
+export async function getAllBookings(): Promise<BookingRecord[]> {
+  const res = await pool.query('SELECT * FROM bookings ORDER BY date ASC, time_slot ASC');
+  return res.rows.map(formatRow);
 }
 
-export function deleteBooking(id: number): boolean {
-  const idx = bookings.findIndex(b => b.id === id);
-  if (idx === -1) return false;
-  bookings.splice(idx, 1);
-  return true;
+export async function getBookingById(id: number): Promise<BookingRecord | undefined> {
+  const res = await pool.query('SELECT * FROM bookings WHERE id = $1', [id]);
+  return res.rows[0] ? formatRow(res.rows[0]) : undefined;
 }
 
-export function getSlotCount(date: string, timeSlot: string, excludeId?: number): number {
-  return bookings.filter(b => b.date === date && b.time_slot === timeSlot && b.id !== excludeId).length;
+export async function createBooking(date: string, time_slot: string, group_name: string): Promise<BookingRecord> {
+  const res = await pool.query(
+    'INSERT INTO bookings (date, time_slot, group_name) VALUES ($1, $2, $3) RETURNING *',
+    [date, time_slot, group_name]
+  );
+  return formatRow(res.rows[0]);
 }
 
-export function isSlotFull(date: string, timeSlot: string, excludeId?: number): boolean {
-  return getSlotCount(date, timeSlot, excludeId) >= MAX_SLOT_CAPACITY;
+export async function updateBooking(id: number, date: string, time_slot: string, group_name: string): Promise<BookingRecord | null> {
+  const res = await pool.query(
+    'UPDATE bookings SET date = $1, time_slot = $2, group_name = $3 WHERE id = $4 RETURNING *',
+    [date, time_slot, group_name, id]
+  );
+  return res.rows[0] ? formatRow(res.rows[0]) : null;
+}
+
+export async function deleteBooking(id: number): Promise<boolean> {
+  const res = await pool.query('DELETE FROM bookings WHERE id = $1 RETURNING id', [id]);
+  return (res.rowCount ?? 0) > 0;
+}
+
+export async function getSlotCount(date: string, timeSlot: string, excludeId?: number): Promise<number> {
+  let query = 'SELECT COUNT(*) FROM bookings WHERE date = $1 AND time_slot = $2';
+  const params: any[] = [date, timeSlot];
+  
+  if (excludeId) {
+    query += ' AND id != $3';
+    params.push(excludeId);
+  }
+  
+  const res = await pool.query(query, params);
+  return parseInt(res.rows[0].count, 10);
+}
+
+export async function isSlotFull(date: string, timeSlot: string, excludeId?: number): Promise<boolean> {
+  const count = await getSlotCount(date, timeSlot, excludeId);
+  return count >= MAX_SLOT_CAPACITY;
 }
 
 export function isFutureDate(dateStr: string): boolean {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const bookingDate = new Date(dateStr + 'T00:00:00');
-  return bookingDate.getTime() > today.getTime(); // strictly after today
+  return bookingDate.getTime() > today.getTime();
 }
