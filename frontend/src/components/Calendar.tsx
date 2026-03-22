@@ -328,7 +328,7 @@ export default function Calendar() {
                   <div className={styles.dayNumber}>
                     <span className={isToday ? styles.todayBadge : ''}>{cell.day}</span>
                   </div>
-                  {future && cell.inMonth && (
+                  {(future || isToday) && cell.inMonth && (
                     <div className={styles.slotsFilledIndicator}>
                       {totalFilled}/2 slots
                     </div>
