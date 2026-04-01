@@ -285,7 +285,7 @@
 /* ===== WEEK HEADER ===== */
 .weekHeader {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   background: rgba(62, 39, 35, 0.9);
   border-radius: 8px 8px 0 0;
   border: 2px solid var(--gold-border);
@@ -307,7 +307,7 @@
 /* ===== CALENDAR GRID ===== */
 .grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   border: 2px solid var(--gold-border);
   border-top: none;
   border-radius: 0 0 8px 8px;
@@ -350,6 +350,8 @@
   transition: all 0.3s ease;
   position: relative;
   background: transparent;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .dayCell::after {
@@ -443,6 +445,8 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 2px;
   margin-bottom: 0.3rem;
 }
 
@@ -689,6 +693,11 @@
     width: 22px;
     height: 22px;
     font-size: 0.62rem;
+  }
+
+  .slotsFilledIndicator {
+    font-size: 0.45rem;
+    padding: 1px 2px;
   }
 
   .bookingCard {
